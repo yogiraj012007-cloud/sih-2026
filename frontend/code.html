@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html class="dark" lang="en" style="">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>True Tone — AI Voice Clone &amp; Impersonation Detection</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#656466",
+                        "on-secondary-container": "#004615",
+                        "on-primary": "#2f3132",
+                        "background": "#121317",
+                        "on-secondary-fixed-variant": "#00531a",
+                        "surface-tint": "#c6c6c8",
+                        "surface-container-lowest": "#0d0e12",
+                        "on-error": "#690005",
+                        "error": "#ffb4ab",
+                        "on-surface": "#e3e2e7",
+                        "secondary-fixed": "#6cff82",
+                        "on-secondary-fixed": "#002106",
+                        "tertiary-fixed": "#e4e2e4",
+                        "surface-container-low": "#1a1b1f",
+                        "tertiary-fixed-dim": "#c8c6c8",
+                        "on-background": "#e3e2e7",
+                        "primary-fixed-dim": "#c6c6c8",
+                        "primary": "#ffffff",
+                        "inverse-on-surface": "#2f3034",
+                        "on-primary-fixed-variant": "#454749",
+                        "on-surface-variant": "#c5c7c9",
+                        "on-secondary": "#003910",
+                        "on-primary-container": "#636466",
+                        "surface-variant": "#343539",
+                        "outline-variant": "#44474a",
+                        "on-error-container": "#ffdad6",
+                        "outline": "#8f9194",
+                        "surface-container-highest": "#343539",
+                        "surface-dim": "#121317",
+                        "primary-fixed": "#e2e2e4",
+                        "secondary-fixed-dim": "#47e266",
+                        "primary-container": "#e2e2e4",
+                        "secondary": "#47e266",
+                        "surface-container-high": "#292a2e",
+                        "tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#474649",
+                        "secondary-container": "#09bf49",
+                        "tertiary-container": "#e4e2e4",
+                        "inverse-primary": "#5d5e60",
+                        "surface": "#121317",
+                        "on-primary-fixed": "#1a1c1d",
+                        "error-container": "#93000a",
+                        "inverse-surface": "#e3e2e7",
+                        "surface-container": "#1e1f23",
+                        "surface-bright": "#38393d",
+                        "on-tertiary": "#303032",
+                        "on-tertiary-fixed": "#1b1b1d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-padding": "24px",
+                        "max-width-desktop": "1200px",
+                        "section-margin": "48px",
+                        "stack-gap": "16px",
+                        "element-gap": "8px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "title-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["17px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+                        "body-md": ["15px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-sm": ["13px", { "lineHeight": "18px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "title-md": ["20px", { "lineHeight": "28px", "letterSpacing": "0em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        body {
+            background-color: #0A0A0A;
+            color: #F5F5F7;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        .app-card {
+            background-color: #1C1C1E;
+            border: 1px solid #2C2C2E;
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.02);
+        }
+
+        .hairline-vertical {
+            background-color: #2C2C2E;
+            width: 1px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #30D158;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #30D158;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(1.1);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Scrollbar styles for the transcript */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #3A3A3C;
+            border-radius: 10px;
+        }
+
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+
+<body
+    class="h-screen flex flex-col bg-[#0A0B0E] text-[#F5F5F7] font-sans selection:bg-amber-500/20 selection:text-amber-300 overflow-hidden"
+    style="background-color: rgb(0, 0, 0);">
+    <!-- Main Application Canvas -->
+    <main class="w-full h-full flex flex-col overflow-hidden relative" style="background-color: rgb(0, 0, 0);">
+        <!-- Top Stage & Detection Feed -->
+        <div class="w-full flex-1 flex flex-col md:flex-row relative z-10 overflow-hidden">
+            <section class="flex-1 flex flex-col relative h-full bg-[#1C1C1E]" style="background-color: rgb(0, 0, 0);">
+                <header class="w-full px-6 py-5 flex justify-between items-center z-10 pt-8">
+                    <div class="flex items-center gap-3.5">
+                        <div
+                            class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500/20 via-white/5 to-white/10 border border-amber-500/20 flex items-center justify-center shadow-inner">
+                            <span class="material-symbols-outlined text-[#F59E0B] text-[18px]">graphic_eq</span>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h1 class="text-[#F5F5F7] font-semibold text-lg tracking-tight">True Tone</h1><span
+                                    class="px-2 py-0.5 rounded-full bg-amber-500/10 text-[#F59E0B] text-[10px] font-mono tracking-wider border border-amber-500/20">AI
+                                    v2.4</span>
+                            </div>
+                            <p class="text-[#8E8E93] text-[11px] font-normal tracking-wide">Know the voice is real.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 md:gap-4">
+                        <div class="flex items-center gap-2 px-3 py-1.5 bg-[#1A1C23]/90 border border-amber-500/20 rounded-full shadow-sm shadow-amber-500/5"
+                            id="vox-status-pill"><span class="relative flex h-2 w-2"><span
+                                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span><span
+                                    class="relative inline-flex rounded-full h-2 w-2 bg-amber-400"></span></span><span
+                                class="text-[#FDE68A] text-[11px] font-medium tracking-wide uppercase">Monitoring</span>
+                        </div>
+                    </div>
+                </header>
+                <div class="flex-1 flex items-center justify-center relative w-full h-full p-8">
+                    <div class="flex flex-col items-center justify-center relative select-none">
+                        <div
+                            class="absolute -inset-16 bg-gradient-to-b from-amber-500/[0.04] via-orange-500/[0.02] to-transparent rounded-full blur-3xl pointer-events-none">
+                        </div>
+                        <div class="w-[200px] h-[200px] sm:w-[240px] sm:h-[240px] md:w-[268px] md:h-[268px] lg:w-[320px] lg:h-[320px] xl:w-[360px] xl:h-[360px] flex items-center justify-center relative"
+                            id="voice-sphere-slot"></div>
+                        <div class="mt-6 flex flex-col items-center gap-1.5 text-center">
+                            <div
+                                class="text-xs tracking-wider uppercase font-mono text-[#F59E0B]/80 flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#F59E0B] animate-pulse"></span>Neural Spectral
+                                Stream Active
+                            </div>
+                            <p class="text-[11px] text-[#8E8E93] font-mono tabular-nums" id="session-clock">00:34:59</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <!-- Hairline Divider -->
+
+        <div
+            class="w-full border-t border-white/[0.08] bg-black/95 p-5 md:p-6 flex flex-col gap-4 z-20 relative backdrop-blur-md shrink-0 overflow-y-auto max-h-[40vh]">
+            <div class="grid grid-cols-1 gap-4 w-full">
+                <div class="flex flex-col rounded-2xl bg-[#0d0e12] border border-white/[0.07] p-4 shadow-inner">
+                    <div class="grid grid-cols-10 gap-2 w-full">
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-[10px] font-mono uppercase tracking-wider text-[#8E8E93]">Overall Deepfake
+                                Confidence Score</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-[10px] font-mono uppercase tracking-wider text-[#8E8E93]">Pitch
+                                (F0)</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-[10px] font-mono uppercase tracking-wider text-[#8E8E93]">Speech Pace /
+                                Rate</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-[10px] font-mono uppercase tracking-wider text-[#8E8E93]">Jitter</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-[10px] font-mono uppercase tracking-wider text-[#8E8E93]">Shimmer</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-[10px] font-mono uppercase tracking-wider text-[#8E8E93]">Prosody
+                                Variance</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-[10px] font-mono uppercase tracking-wider text-[#8E8E93]">Breathing &amp;
+                                Pauses</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-[10px] font-mono uppercase tracking-wider text-[#8E8E93]">Background Room
+                                Noise</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-[10px] font-mono uppercase tracking-wider text-[#8E8E93]">Speaker
+                                Similarity</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-[10px] font-mono uppercase tracking-wider text-[#8E8E93]">Voiceprint
+                                Match</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-xs font-mono font-medium text-[#F5F5F7]">87.3%</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-xs font-mono font-medium text-[#F5F5F7]">142.6 Hz</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-xs font-mono font-medium text-[#F5F5F7]">156 wpm</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-xs font-mono font-medium text-[#F5F5F7]">1.24%</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-xs font-mono font-medium text-[#F5F5F7]">3.87%</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-xs font-mono font-medium text-[#F5F5F7]">0.72</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-xs font-mono font-medium text-[#F5F5F7]">4.2s avg</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-xs font-mono font-medium text-[#F5F5F7]">-38.1 dB</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-xs font-mono font-medium text-[#F5F5F7]">91.5%</span>
+                        </div>
+                        <div
+                            class="bg-black/60 rounded-lg p-2.5 border border-white/[0.05] flex flex-col justify-center min-h-[64px]">
+                            <span class="text-xs font-mono font-medium text-[#F5F5F7]">94.8%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        // Lightweight macOS Activity Monitor style tabular-nums telemetry live updates
+        let sessionSeconds = 15 * 60 + 24; // 00:15:24
+
+        setInterval(() => {
+            // Update session timer
+            sessionSeconds++;
+            const hrs = String(Math.floor(sessionSeconds / 3600)).padStart(2, '0');
+            const mins = String(Math.floor((sessionSeconds % 3600) / 60)).padStart(2, '0');
+            const secs = String(sessionSeconds % 60).padStart(2, '0');
+            const clockEl = document.getElementById('session-clock');
+            if (clockEl) clockEl.innerText = `${hrs}:${mins}:${secs}`;
+
+            // Subtle realistic telemetry fluctuations
+            const deepfakeScore = (93.8 + (Math.random() * 0.4)).toFixed(1);
+            const elDeepfake = document.getElementById('val-deepfake-score');
+            if (elDeepfake) elDeepfake.innerText = `${deepfakeScore}%`;
+
+            const entropy = (0.11 + (Math.random() * 0.03)).toFixed(2);
+            const elEntropy = document.getElementById('val-entropy');
+            if (elEntropy) elEntropy.innerText = entropy;
+
+            const pitch = (141.0 + (Math.random() * 1.8)).toFixed(1);
+            const elPitch = document.getElementById('val-pitch');
+            if (elPitch) elPitch.innerHTML = `${pitch} <span class="text-base font-normal text-[#8E8E93]">Hz</span>`;
+
+            const pace = (4.0 + (Math.random() * 0.3)).toFixed(1);
+            const elPace = document.getElementById('val-pace');
+            if (elPace) elPace.innerHTML = `${pace} <span class="text-base font-normal text-[#8E8E93]">syl/s</span>`;
+
+            const jitter = (0.39 + (Math.random() * 0.04)).toFixed(2);
+            const elJitter = document.getElementById('val-jitter');
+            if (elJitter) elJitter.innerText = `${jitter}%`;
+
+            const shimmer = (1.74 + (Math.random() * 0.08)).toFixed(2);
+            const elShimmer = document.getElementById('val-shimmer');
+            if (elShimmer) elShimmer.innerText = `${shimmer}%`;
+
+            const f1 = Math.round(518 + (Math.random() * 4));
+            const f2 = Math.round(1734 + (Math.random() * 6));
+            const f3 = Math.round(2577 + (Math.random() * 5));
+            const elFormants = document.getElementById('val-formants');
+            if (elFormants) elFormants.innerText = `F1: ${f1}Hz · F2: ${f2}Hz · F3: ${f3}Hz`;
+
+            const rms = (-14.4 + (Math.random() * 0.5)).toFixed(1);
+            const elRms = document.getElementById('val-spectral-rms');
+            if (elRms) elRms.innerHTML = `${rms} <span class="text-base font-normal text-[#8E8E93]">dB RMS</span>`;
+
+            const prosody = (28.0 + (Math.random() * 0.4)).toFixed(1);
+            const elProsody = document.getElementById('val-prosody');
+            if (elProsody) elProsody.innerText = `σ ${prosody}`;
+
+            const pause = Math.round(415 + (Math.random() * 12));
+            const elBreathing = document.getElementById('val-breathing');
+            if (elBreathing) elBreathing.innerText = `Pause: ${pause}ms · Inhales: 14/min`;
+
+            const snr = (-48.6 + (Math.random() * 0.4)).toFixed(1);
+            const elRoom = document.getElementById('val-room-snr');
+            if (elRoom) elRoom.innerHTML = `${snr} <span class="text-base font-normal text-[#8E8E93]">dB SNR</span>`;
+
+            const sim = (98.2 + (Math.random() * 0.3)).toFixed(1);
+            const dist = (0.015 + (Math.random() * 0.002)).toFixed(3);
+            const elSim = document.getElementById('val-speaker-sim');
+            if (elSim) elSim.innerHTML = `${sim}% <span class="text-base font-normal text-[#8E8E93]">Match</span>`;
+            const elDist = document.getElementById('val-vector-dist');
+            if (elDist) elDist.innerText = `Cosine vector distance: ${dist} (ID: #VX-8839)`;
+        }, 1000);
+    </script>
+
+
+    <script>
+        // ============================================================
+        // VoxGuard 3D Voice-Reactive Siri Glass Orb
+        // Three.js r128 + Custom GLSL Shaders + Web Audio API
+        // ============================================================
+        (function () {
+            'use strict';
+
+            // === Configuration ===
+            var CONFIG = {
+                driftSpeed: 1.60,
+                intensity: 1.0,
+                hue: 0.0,
+                length: 0.95,
+                segments: 128,
+                audioSmoothing: 0.12,
+                fftSize: 2048,
+                maxPixelRatio: 2
+            };
+
+            // === Vertex Shader ===
+            var VERTEX_SHADER = `
+        varying vec3 vPosition;
+        varying vec3 vNormal;
+        varying vec3 vViewDir;
+        uniform float uTime;
+        uniform float uAudioBass;
+        uniform float uAudioLevel;
+
+        void main() {
+            vec3 pos = position;
+            // Audio-reactive surface deformation
+            float bassDisp = sin(pos.x * 3.0 + uTime * 1.5) *
+                             cos(pos.y * 2.5 + uTime * 1.2) *
+                             sin(pos.z * 2.8 + uTime * 0.9) *
+                             uAudioBass * 0.025;
+            float levelDisp = sin(pos.x * 8.0 + uTime * 3.0) *
+                              sin(pos.y * 7.0 + uTime * 2.5) *
+                              uAudioLevel * 0.012;
+            pos += normal * (bassDisp + levelDisp);
+
+            vPosition = pos;
+            vNormal = normalMatrix * normal;
+            vec4 worldPos = modelMatrix * vec4(pos, 1.0);
+            vViewDir = normalize(cameraPosition - worldPos.xyz);
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+        }
+    `;
+
+            // === Fragment Shader ===
+            var FRAGMENT_SHADER = `
+        precision highp float;
+
+        varying vec3 vPosition;
+        varying vec3 vNormal;
+        varying vec3 vViewDir;
+
+        uniform float uTime;
+        uniform float uDriftSpeed;
+        uniform float uIntensity;
+        uniform float uHue;
+        uniform float uLength;
+        uniform float uAudioLevel;
+        uniform float uAudioBass;
+        uniform float uAudioTreble;
+
+        // ---- 3D Simplex Noise (Ashima Arts / MIT) ----
+        vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+        vec4 permute(vec4 x) { return mod289(((x * 34.0) + 10.0) * x); }
+        vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+
+        float snoise(vec3 v) {
+            const vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0);
+            const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+            vec3 i = floor(v + dot(v, C.yyy));
+            vec3 x0 = v - i + dot(i, C.xxx);
+            vec3 g = step(x0.yzx, x0.xyz);
+            vec3 l = 1.0 - g;
+            vec3 i1 = min(g.xyz, l.zxy);
+            vec3 i2 = max(g.xyz, l.zxy);
+            vec3 x1 = x0 - i1 + C.xxx;
+            vec3 x2 = x0 - i2 + C.yyy;
+            vec3 x3 = x0 - D.yyy;
+            i = mod289(i);
+            vec4 p = permute(permute(permute(
+                i.z + vec4(0.0, i1.z, i2.z, 1.0))
+                + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+                + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+            float n_ = 0.142857142857;
+            vec3 ns = n_ * D.wyz - D.xzx;
+            vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+            vec4 x_ = floor(j * ns.z);
+            vec4 y_ = floor(j - 7.0 * x_);
+            vec4 xn = x_ * ns.x + ns.yyyy;
+            vec4 yn = y_ * ns.x + ns.yyyy;
+            vec4 h = 1.0 - abs(xn) - abs(yn);
+            vec4 b0 = vec4(xn.xy, yn.xy);
+            vec4 b1 = vec4(xn.zw, yn.zw);
+            vec4 s0 = floor(b0) * 2.0 + 1.0;
+            vec4 s1 = floor(b1) * 2.0 + 1.0;
+            vec4 sh = -step(h, vec4(0.0));
+            vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
+            vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
+            vec3 p0 = vec3(a0.xy, h.x);
+            vec3 p1 = vec3(a0.zw, h.y);
+            vec3 p2 = vec3(a1.xy, h.z);
+            vec3 p3 = vec3(a1.zw, h.w);
+            vec4 norm = taylorInvSqrt(vec4(dot(p0,p0), dot(p1,p1), dot(p2,p2), dot(p3,p3)));
+            p0 *= norm.x; p1 *= norm.y; p2 *= norm.z; p3 *= norm.w;
+            vec4 m = max(0.5 - vec4(dot(x0,x0), dot(x1,x1), dot(x2,x2), dot(x3,x3)), 0.0);
+            m = m * m;
+            return 105.0 * dot(m * m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
+        }
+
+        // ---- Siri Color Spectrum ----
+        vec3 siriSpectrum(float t) {
+            t = fract(t);
+            if (t < 0.15) return mix(vec3(1.0, 0.12, 0.05), vec3(1.0, 0.0, 0.4), t / 0.15);
+            if (t < 0.30) return mix(vec3(1.0, 0.0, 0.4), vec3(1.0, 0.35, 0.65), (t - 0.15) / 0.15);
+            if (t < 0.45) return mix(vec3(1.0, 0.35, 0.65), vec3(1.0, 0.92, 0.88), (t - 0.30) / 0.15);
+            if (t < 0.58) return mix(vec3(1.0, 0.92, 0.88), vec3(0.2, 0.55, 1.0), (t - 0.45) / 0.13);
+            if (t < 0.72) return mix(vec3(0.2, 0.55, 1.0), vec3(0.15, 0.85, 1.0), (t - 0.58) / 0.14);
+            if (t < 0.87) return mix(vec3(0.15, 0.85, 1.0), vec3(1.0, 0.6, 0.08), (t - 0.72) / 0.15);
+            return mix(vec3(1.0, 0.6, 0.08), vec3(1.0, 0.12, 0.05), (t - 0.87) / 0.13);
+        }
+
+        // ---- Ribbon Band Evaluation ----
+        float ribbon(vec3 p, vec3 bn, float w, float time, float ns, float ab, float bw, float tm) {
+            float d = dot(p, bn);
+            d += snoise(p * 2.0 * ns + vec3(time * 0.6, time * 0.4, -time * 0.3)) * 0.3;
+            d += snoise(p * 4.0 * ns * tm + vec3(-time * 0.4, time * 0.7, time * 0.5)) * 0.15 * ab;
+            d += snoise(p * 1.2 + vec3(time * 0.2, -time * 0.15, time * 0.1)) * bw;
+            float r = smoothstep(w, w * 0.05, abs(d));
+            return r * r;
+        }
+
+        // ---- Arc Position for Color Mapping ----
+        float arcPos(vec3 p, vec3 bn) {
+            vec3 t1 = normalize(cross(bn, vec3(0.0, 0.0, 1.0)));
+            if (length(cross(bn, vec3(0.0, 0.0, 1.0))) < 0.01)
+                t1 = normalize(cross(bn, vec3(1.0, 0.0, 0.0)));
+            vec3 t2 = cross(bn, t1);
+            return atan(dot(p, t2), dot(p, t1)) / 6.28318 + 0.5;
+        }
+
+        void main() {
+            vec3 nm = normalize(vNormal);
+            vec3 vd = normalize(vViewDir);
+            vec3 p = normalize(vPosition);
+            float t = uTime * uDriftSpeed * 0.2;
+
+            // Audio modulation parameters
+            float ab = 1.0 + uAudioLevel * 2.5;
+            float bw = uAudioBass * 0.35;
+            float tm = 1.0 + uAudioTreble * 1.5;
+
+            // Fresnel for glass rim
+            float NdV = max(dot(nm, vd), 0.0);
+            float fresnel = pow(1.0 - NdV, 4.0);
+
+            // Band normals (tilted great circles)
+            vec3 bn1 = normalize(vec3(0.2, 1.0, 0.15));
+            vec3 bn2 = normalize(vec3(-0.15, 1.0, -0.25));
+            vec3 bn3 = normalize(vec3(0.35, 0.85, -0.12));
+            vec3 bn4 = normalize(vec3(-0.1, 0.9, 0.3));
+            vec3 bn5 = normalize(vec3(0.25, 0.95, 0.35));
+
+            vec3 totalRibbon = vec3(0.0);
+            float totalStrength = 0.0;
+
+            // Sample at 3 depth layers for volumetric appearance
+            for (int layer = 0; layer < 3; layer++) {
+                float depth = 0.65 + float(layer) * 0.17;
+                vec3 sp = p * depth;
+                float lw = 0.35 - float(layer) * 0.06;
+
+                float r1 = ribbon(sp, bn1, 0.30 * uLength, t, 1.0, ab, bw, tm);
+                totalRibbon += siriSpectrum(fract(arcPos(sp, bn1) + uHue + t * 0.03)) * r1 * 1.3 * lw;
+                totalStrength += r1 * lw;
+
+                float r2 = ribbon(sp, bn2, 0.24 * uLength, t * 1.1, 1.2, ab, bw, tm);
+                totalRibbon += siriSpectrum(fract(arcPos(sp, bn2) + 0.3 + uHue + t * 0.04)) * r2 * 0.9 * lw;
+                totalStrength += r2 * 0.7 * lw;
+
+                float r3 = ribbon(sp, bn3, 0.20 * uLength, t * 0.9, 0.9, ab, bw, tm);
+                totalRibbon += siriSpectrum(fract(arcPos(sp, bn3) + 0.55 + uHue + t * 0.025)) * r3 * 0.7 * lw;
+                totalStrength += r3 * 0.5 * lw;
+
+                float r4 = ribbon(sp, bn4, 0.16 * uLength, t * 1.2, 1.1, ab, bw, tm);
+                totalRibbon += siriSpectrum(fract(arcPos(sp, bn4) + 0.75 + uHue + t * 0.035)) * r4 * 0.55 * lw;
+                totalStrength += r4 * 0.4 * lw;
+
+                float r5 = ribbon(sp, bn5, 0.12 * uLength, t * 1.3, 1.4, ab, bw, tm);
+                totalRibbon += siriSpectrum(fract(arcPos(sp, bn5) + 0.15 + uHue + t * 0.045)) * r5 * 0.4 * lw;
+                totalStrength += r5 * 0.3 * lw;
+            }
+
+            totalRibbon *= uIntensity * (1.0 + uAudioLevel * 1.8);
+
+            // Glass shell base
+            vec3 glass = vec3(0.015, 0.015, 0.025);
+
+            // Fresnel rim highlight
+            vec3 rim = vec3(0.1, 0.1, 0.15) * fresnel;
+
+            // Specular highlights
+            vec3 lDir = normalize(vec3(-0.4, 0.9, 0.6));
+            float sp1 = pow(max(dot(reflect(-vd, nm), lDir), 0.0), 96.0);
+            float sp2 = pow(max(dot(reflect(-vd, nm), lDir), 0.0), 16.0);
+            vec3 spec = vec3(1.0, 0.97, 0.92) * sp1 * 0.85 + vec3(0.12, 0.12, 0.16) * sp2 * 0.3;
+
+            // Final compositing
+            vec3 col = glass + totalRibbon + rim + spec + totalRibbon * uAudioLevel * 0.4;
+            float alpha = max(0.88, min(totalStrength * 1.2, 1.0));
+            alpha = min(alpha + fresnel * 0.12 + sp1 * 0.4, 1.0);
+
+            gl_FragColor = vec4(col, alpha);
+        }
+    `;
+
+            // === Glow Vertex Shader ===
+            var GLOW_VS = `
+        varying vec3 vGlowNormal;
+        varying vec3 vGlowViewDir;
+        void main() {
+            vGlowNormal = normalMatrix * normal;
+            vec4 wp = modelMatrix * vec4(position, 1.0);
+            vGlowViewDir = normalize(cameraPosition - wp.xyz);
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `;
+
+            // === Glow Fragment Shader ===
+            var GLOW_FS = `
+        precision highp float;
+        varying vec3 vGlowNormal;
+        varying vec3 vGlowViewDir;
+        uniform float uAudioLevel;
+        uniform float uTime;
+        void main() {
+            float NdV = max(dot(normalize(vGlowNormal), normalize(vGlowViewDir)), 0.0);
+            float glow = pow(1.0 - NdV, 3.0);
+            vec3 glowColor = mix(vec3(0.3, 0.15, 0.5), vec3(0.1, 0.4, 0.8), sin(uTime * 0.5) * 0.5 + 0.5);
+            float intensity = glow * (0.06 + uAudioLevel * 0.35);
+            gl_FragColor = vec4(glowColor * intensity, intensity * 0.35);
+        }
+    `;
+
+            // === THREE.JS SETUP ===
+            var container = document.getElementById('voice-sphere-slot');
+            if (!container || !window.THREE) return;
+
+            var renderer;
+            try {
+                renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, premultipliedAlpha: false });
+            } catch (e) {
+                console.warn('True Tone: WebGL not available.');
+                return;
+            }
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, CONFIG.maxPixelRatio));
+            renderer.setClearColor(0x000000, 0);
+            renderer.domElement.style.display = 'block';
+            renderer.domElement.style.borderRadius = '50%';
+            container.appendChild(renderer.domElement);
+
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+            camera.position.z = 3.2;
+
+            var uniforms = {
+                uTime: { value: 0.0 },
+                uDriftSpeed: { value: CONFIG.driftSpeed },
+                uIntensity: { value: CONFIG.intensity },
+                uHue: { value: CONFIG.hue },
+                uLength: { value: CONFIG.length },
+                uAudioLevel: { value: 0.0 },
+                uAudioBass: { value: 0.0 },
+                uAudioTreble: { value: 0.0 }
+            };
+
+            // Main orb sphere
+            var geometry = new THREE.SphereGeometry(1, CONFIG.segments, CONFIG.segments);
+            var material = new THREE.ShaderMaterial({
+                vertexShader: VERTEX_SHADER,
+                fragmentShader: FRAGMENT_SHADER,
+                uniforms: uniforms,
+                transparent: true,
+                depthWrite: false
+            });
+            var orbMesh = new THREE.Mesh(geometry, material);
+            scene.add(orbMesh);
+
+            // Outer glow halo sphere
+            var glowGeometry = new THREE.SphereGeometry(1.18, 64, 64);
+            var glowMaterial = new THREE.ShaderMaterial({
+                vertexShader: GLOW_VS,
+                fragmentShader: GLOW_FS,
+                uniforms: { uAudioLevel: uniforms.uAudioLevel, uTime: uniforms.uTime },
+                transparent: true,
+                depthWrite: false
+            });
+            var glowMesh = new THREE.Mesh(glowGeometry, glowMaterial);
+            glowMesh.renderOrder = -1;
+            scene.add(glowMesh);
+
+            // === RESIZE HANDLING ===
+            function handleResize() {
+                var rect = container.getBoundingClientRect();
+                var size = Math.min(rect.width, rect.height);
+                if (size > 0) renderer.setSize(size, size);
+            }
+            var resizeObserver = new ResizeObserver(handleResize);
+            resizeObserver.observe(container);
+            handleResize();
+
+            // === WEB AUDIO API — MICROPHONE ===
+            var audioCtx, analyser, freqData, micStream;
+            var smoothLevel = 0, smoothBass = 0, smoothTreble = 0;
+            var micInitialized = false;
+
+            function initMicrophone() {
+                if (micInitialized) return;
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    console.log('True Tone: getUserMedia not available (requires HTTPS).');
+                    return;
+                }
+                micInitialized = true;
+                navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+                    micStream = stream;
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    var source = audioCtx.createMediaStreamSource(stream);
+                    analyser = audioCtx.createAnalyser();
+                    analyser.fftSize = CONFIG.fftSize;
+                    analyser.smoothingTimeConstant = 0.8;
+                    source.connect(analyser);
+                    freqData = new Uint8Array(analyser.frequencyBinCount);
+                }).catch(function () {
+                    console.log('True Tone: Microphone access denied — running idle animation.');
+                    micInitialized = false;
+                });
+            }
+
+            document.addEventListener('click', initMicrophone, { once: true });
+            document.addEventListener('touchstart', initMicrophone, { once: true });
+
+            function updateAudio() {
+                if (!analyser || !freqData) return;
+                analyser.getByteFrequencyData(freqData);
+                var len = freqData.length;
+                var total = 0, bass = 0, treble = 0;
+                var bassEnd = Math.floor(len * 0.15);
+                var trebleStart = Math.floor(len * 0.6);
+                for (var i = 0; i < len; i++) {
+                    total += freqData[i];
+                    if (i < bassEnd) bass += freqData[i];
+                    if (i >= trebleStart) treble += freqData[i];
+                }
+                total /= (len * 255);
+                bass /= (bassEnd * 255);
+                treble /= ((len - trebleStart) * 255);
+                var k = CONFIG.audioSmoothing;
+                smoothLevel += (total - smoothLevel) * k;
+                smoothBass += (bass - smoothBass) * k;
+                smoothTreble += (treble - smoothTreble) * k;
+            }
+
+            // === ANIMATION LOOP ===
+            var clock = new THREE.Clock();
+            var bumpScale = 1.0;
+            (function animate() {
+                requestAnimationFrame(animate);
+                updateAudio();
+                uniforms.uTime.value = clock.getElapsedTime();
+                uniforms.uAudioLevel.value = smoothLevel;
+                uniforms.uAudioBass.value = smoothBass;
+                uniforms.uAudioTreble.value = smoothTreble;
+
+                // Bumping scale animation driven by voice
+                var targetScale = 1.0 + smoothBass * 0.228 + smoothLevel * 0.101;
+                bumpScale += (targetScale - bumpScale) * 0.281;
+                orbMesh.scale.setScalar(bumpScale);
+                glowMesh.scale.setScalar(bumpScale * 1.18);
+
+                renderer.render(scene, camera);
+            })();
+
+            // === CLEANUP ===
+            window.addEventListener('beforeunload', function () {
+                resizeObserver.disconnect();
+                if (micStream) micStream.getTracks().forEach(function (track) { track.stop(); });
+                if (audioCtx && audioCtx.state !== 'closed') audioCtx.close();
+                renderer.dispose();
+                geometry.dispose();
+                material.dispose();
+                glowGeometry.dispose();
+                glowMaterial.dispose();
+            });
+        })();
+    </script>
+
+</body>
+
+</html>
