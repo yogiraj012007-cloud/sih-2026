@@ -327,6 +327,13 @@
         // Lightweight macOS Activity Monitor style tabular-nums telemetry live updates
         let sessionSeconds = 15 * 60 + 24; // 00:15:24
 
+        /**
+         * Live Telemetry Update Callback
+         * Executes every 1000ms (1 second) to simulate continuous voice biometric telemetry streaming.
+         * Increments the active call session timer and dynamically injects realistic subtle variations
+         * into acoustic indicators (pitch, pace, jitter, shimmer, formants, deepfake probability,
+         * vocal entropy, signal-to-noise ratio, and speaker cosine vector similarity) in the DOM.
+         */
         setInterval(() => {
             // Update session timer
             sessionSeconds++;
@@ -398,6 +405,11 @@
         // VoxGuard 3D Voice-Reactive Siri Glass Orb
         // Three.js r128 + Custom GLSL Shaders + Web Audio API
         // ============================================================
+        /**
+         * VoxGuard 3D Voice-Reactive Siri Glass Orb Module (IIFE)
+         * Encapsulates the WebGL rendering engine, custom GLSL procedural shaders,
+         * real-time Web Audio API frequency analysis, and animation loop within an isolated scope.
+         */
         (function () {
             'use strict';
 
@@ -422,6 +434,11 @@
         uniform float uAudioBass;
         uniform float uAudioLevel;
 
+        /**
+         * Main Vertex Shader
+         * Displaces the orb mesh surface dynamically along vertex normals based on live
+         * bass and volume audio input, computes view directions, and projects vertices to clip space.
+         */
         void main() {
             vec3 pos = position;
             // Audio-reactive surface deformation
@@ -460,11 +477,36 @@
         uniform float uAudioTreble;
 
         // ---- 3D Simplex Noise (Ashima Arts / MIT) ----
+
+        /**
+         * Wraps 3D vector coordinates modulo 289.
+         * Used to maintain numerical stability and avoid precision loss during GPU noise permutation.
+         */
         vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+
+        /**
+         * Wraps 4D vector coordinates modulo 289.
+         * Provides coordinate wrapping for 4-component lattice points during simplex noise computation.
+         */
         vec4 mod289(vec4 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
+
+        /**
+         * Permutes coordinate hash values using an Ashima polynomial generator.
+         * Generates pseudo-random lattice values for procedural noise evaluation.
+         */
         vec4 permute(vec4 x) { return mod289(((x * 34.0) + 10.0) * x); }
+
+        /**
+         * Computes fast approximate inverse square root (1.0 / sqrt(r)) via Taylor series expansion.
+         * Efficiently normalizes gradient vectors on the GPU without expensive square root operations.
+         */
         vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
 
+        /**
+         * 3D Simplex Noise generator (Ashima Arts / Stefan Gustavson).
+         * Calculates smooth, continuous, deterministic 3D procedural noise to drive organic,
+         * fluid surface distortion and swirling turbulence across ribbon strands.
+         */
         float snoise(vec3 v) {
             const vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0);
             const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
@@ -509,6 +551,12 @@
         }
 
         // ---- Siri Color Spectrum ----
+
+        /**
+         * Siri Color Spectrum Mapper
+         * Samples an Apple Siri-inspired iridescent chromatic color ramp based on phase t [0.0, 1.0],
+         * smoothly blending between vibrant hues: magenta, pink, violet, cyan, electric blue, and warm amber.
+         */
         vec3 siriSpectrum(float t) {
             t = fract(t);
             if (t < 0.15) return mix(vec3(1.0, 0.12, 0.05), vec3(1.0, 0.0, 0.4), t / 0.15);
@@ -521,6 +569,12 @@
         }
 
         // ---- Ribbon Band Evaluation ----
+
+        /**
+         * Evaluates local ribbon band presence and strength on the sphere surface.
+         * Measures perpendicular distance from point p to band plane normal bn, distorts the edge
+         * with audio-modulated 3D simplex noise, and applies a smoothstep falloff for glowing edges.
+         */
         float ribbon(vec3 p, vec3 bn, float w, float time, float ns, float ab, float bw, float tm) {
             float d = dot(p, bn);
             d += snoise(p * 2.0 * ns + vec3(time * 0.6, time * 0.4, -time * 0.3)) * 0.3;
@@ -531,6 +585,12 @@
         }
 
         // ---- Arc Position for Color Mapping ----
+
+        /**
+         * Calculates normalized circumferential arc position around a ribbon circle.
+         * Establishes an orthonormal 2D tangent plane perpendicular to normal bn and returns
+         * a normalized value [0.0, 1.0] for wrapping colors along the ribbon's perimeter.
+         */
         float arcPos(vec3 p, vec3 bn) {
             vec3 t1 = normalize(cross(bn, vec3(0.0, 0.0, 1.0)));
             if (length(cross(bn, vec3(0.0, 0.0, 1.0))) < 0.01)
@@ -539,6 +599,12 @@
             return atan(dot(p, t2), dot(p, t1)) / 6.28318 + 0.5;
         }
 
+        /**
+         * Main Fragment Shader
+         * Renders volumetric chromatic ribbon bands sampled across multiple depth layers inside the orb,
+         * calculates Fresnel rim reflections and specular glass highlights, modulates brightness
+         * with live microphone energy, and composites the final translucent glass sphere.
+         */
         void main() {
             vec3 nm = normalize(vNormal);
             vec3 vd = normalize(vViewDir);
@@ -618,6 +684,12 @@
             var GLOW_VS = `
         varying vec3 vGlowNormal;
         varying vec3 vGlowViewDir;
+
+        /**
+         * Atmospheric Halo Glow Vertex Shader
+         * Transforms outer halo mesh vertices and calculates normal and view-direction vectors
+         * used to compute edge-glow falloff in the fragment stage.
+         */
         void main() {
             vGlowNormal = normalMatrix * normal;
             vec4 wp = modelMatrix * vec4(position, 1.0);
@@ -633,6 +705,12 @@
         varying vec3 vGlowViewDir;
         uniform float uAudioLevel;
         uniform float uTime;
+
+        /**
+         * Atmospheric Halo Glow Fragment Shader
+         * Produces a soft, luminous halo aura around the glass sphere using inverse Fresnel falloff.
+         * Dynamically modulates chromatic hue over time and flares in brightness with microphone volume.
+         */
         void main() {
             float NdV = max(dot(normalize(vGlowNormal), normalize(vGlowViewDir)), 0.0);
             float glow = pow(1.0 - NdV, 3.0);
@@ -700,6 +778,10 @@
             scene.add(glowMesh);
 
             // === RESIZE HANDLING ===
+            /**
+             * Resizes the WebGL renderer canvas when its container element changes size.
+             * Queries container bounding box to maintain a crisp 1:1 aspect ratio square viewport.
+             */
             function handleResize() {
                 var rect = container.getBoundingClientRect();
                 var size = Math.min(rect.width, rect.height);
@@ -714,6 +796,12 @@
             var smoothLevel = 0, smoothBass = 0, smoothTreble = 0;
             var micInitialized = false;
 
+            /**
+             * Initializes the microphone audio pipeline via the Web Audio API.
+             * Requests user audio permission, establishes an AudioContext and AnalyserNode,
+             * binds the frequency data array buffer, or safely falls back to idle animation
+             * if access is denied or HTTPS is unavailable.
+             */
             function initMicrophone() {
                 if (micInitialized) return;
                 if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -721,6 +809,11 @@
                     return;
                 }
                 micInitialized = true;
+                /**
+                 * Success callback receiving the live microphone MediaStream.
+                 * Sets up audio nodes and frequency analyzer pipeline.
+                 * @param {MediaStream} stream - Hardware microphone audio stream
+                 */
                 navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
                     micStream = stream;
                     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -730,6 +823,10 @@
                     analyser.smoothingTimeConstant = 0.8;
                     source.connect(analyser);
                     freqData = new Uint8Array(analyser.frequencyBinCount);
+                /**
+                 * Error/rejection callback when microphone access is denied or fails.
+                 * Logs notification and allows the orb to continue operating in idle ambient mode.
+                 */
                 }).catch(function () {
                     console.log('True Tone: Microphone access denied — running idle animation.');
                     micInitialized = false;
@@ -739,6 +836,11 @@
             document.addEventListener('click', initMicrophone, { once: true });
             document.addEventListener('touchstart', initMicrophone, { once: true });
 
+            /**
+             * Samples and decomposes live frequency data from the AnalyserNode.
+             * Calculates overall amplitude, low-frequency bass energy, and high-frequency treble energy,
+             * applying exponential smoothing filters to drive natural, fluid shader reactivity.
+             */
             function updateAudio() {
                 if (!analyser || !freqData) return;
                 analyser.getByteFrequencyData(freqData);
@@ -763,6 +865,13 @@
             // === ANIMATION LOOP ===
             var clock = new THREE.Clock();
             var bumpScale = 1.0;
+
+            /**
+             * Main Animation and Render Loop
+             * Schedules next frame via requestAnimationFrame, evaluates real-time audio frequency data,
+             * passes elapsed time and smoothed audio metrics to GLSL uniforms, computes organic voice-reactive
+             * scaling on the orb meshes, and renders the 3D scene.
+             */
             (function animate() {
                 requestAnimationFrame(animate);
                 updateAudio();
@@ -781,8 +890,17 @@
             })();
 
             // === CLEANUP ===
+            /**
+             * Window Unload Cleanup Handler
+             * Disconnects DOM observers, halts microphone recording tracks, closes the AudioContext,
+             * and disposes WebGL geometries, shaders, and renderers to eliminate memory leaks upon page exit.
+             */
             window.addEventListener('beforeunload', function () {
                 resizeObserver.disconnect();
+                /**
+                 * Stops an individual audio track to release hardware microphone capture.
+                 * @param {MediaStreamTrack} track - Active audio track to terminate
+                 */
                 if (micStream) micStream.getTracks().forEach(function (track) { track.stop(); });
                 if (audioCtx && audioCtx.state !== 'closed') audioCtx.close();
                 renderer.dispose();
